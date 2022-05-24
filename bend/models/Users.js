@@ -1,24 +1,15 @@
-import moongose from 'mongoose'
-const userSchema = moongose.Schema({
-    name: {
-        type: String,
-        required: true
-    }, email: {
-        type: String,
-        required: true,
-        unique: true
-    }, password: {
-        type: String,
-        required: true
-    }, isAdmin: {
-        type: Boolean,
-        required: true,
-        default: false
-    }
-}, {
-    timestamps: true
-})
+import { DataTypes } from 'sequelize'
 
-const User = moongose.model('User', userSchema)
+const User = (sequelize) => {
+  sequelize.define("auth_users", {
+    name: DataTypes.TEXT,
+    favoriteColor: {
+      type: DataTypes.TEXT,
+      defaultValue: 'green'
+    },
+    aaaa: DataTypes.INTEGER,
+    cash: DataTypes.INTEGER
+  });
+}
 
 export default User

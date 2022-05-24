@@ -1,0 +1,8 @@
+{
+    "PORT": 3000,
+    "PG_USER": "postgres",
+    "PG_PASS": "postgres",
+    "PG_DB": "auth-db",
+    "PG_PORT": 5432,
+    "PG_HOST": "localhost"
+}
