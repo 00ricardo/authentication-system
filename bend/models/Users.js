@@ -9,6 +9,8 @@ const User = (sequelize) => {
     },
     aaaa: DataTypes.INTEGER,
     cash: DataTypes.INTEGER
+  }, {
+    timestamps: false
   });
 }
 
