@@ -1,3 +1,4 @@
 .env
 bend/db/ctx.json
 bend/node_modules
+node_modules

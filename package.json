@@ -6,11 +6,16 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon ./bend/server/sv.js"
+    "server": "nodemon bend/server/sv",
+    "client": "npm start --prefix fend",
+    "start": "concurrently \"npm run server\" \"npm run client\""
   },
   "keywords": [
     "Authentication"
   ],
   "author": "Ricardo Briceño",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "nodemon": "^2.0.16"
+  }
 }
