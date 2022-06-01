@@ -13,19 +13,39 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 //--------------------------//--------------------------------
 //--------------------------//--------------------------------
 import Copyright from '../Components/Copyright';
+import axios from 'axios'
 
 const theme = createTheme();
 
 export default function SignUp() {
-    const handleSubmit = (event) => {
+
+
+
+    /*
+    * States
+    */
+    //const [remember, setRemember] = React.useState(false);
+    /*
+    * Handlers
+    */
+    const registerUser = async (event) => {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
-        console.log({
-            firstName: data.get('firstName'),
-            lastName: data.get('lastName'),
-            email: data.get('email'),
-            password: data.get('password'),
-        });
+        try {
+            await axios.post('http://localhost:3001/authapi/register', {
+                first_name: data.get('firstName'),
+                last_name: data.get('lastName'),
+                email: data.get('email'),
+                password: data.get('password'),
+            })
+                .then((response) => {
+                    console.log(response.data)
+                    console.log(response.status)
+                })
+        } catch (error) {
+            console.log("aa")
+            console.log(error.response.data);
+        }
     };
 
     return (
@@ -46,7 +66,7 @@ export default function SignUp() {
                     <Typography component="h1" variant="h5">
                         Sign up
                     </Typography>
-                    <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
+                    <Box component="form" noValidate onSubmit={registerUser} sx={{ mt: 3 }}>
                         <Grid container spacing={2}>
                             <Grid item xs={12} sm={6}>
                                 <TextField
@@ -101,7 +121,7 @@ export default function SignUp() {
                         </Button>
                         <Grid container justifyContent="flex-end">
                             <Grid item>
-                                <Link href="/signin" variant="body2">
+                                <Link href="/" variant="body2">
                                     Already have an account? Sign in
                                 </Link>
                             </Grid>

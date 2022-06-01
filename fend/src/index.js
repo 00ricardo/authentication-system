@@ -13,7 +13,7 @@ export default function App() {
   return (
     <Router>
       <Switch>
-        <Route path="/signin">
+        <Route exact path="/">
           <SignIn />
         </Route>
         <Route path="/signup">

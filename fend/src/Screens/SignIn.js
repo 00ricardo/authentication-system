@@ -15,7 +15,7 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 //--------------------------//--------------------------------
 //--------------------------//--------------------------------
 import Copyright from '../Components/Copyright';
-
+import axios from 'axios'
 
 const theme = createTheme();
 
@@ -32,15 +32,23 @@ export default function SignIn() {
     setRemember(event.target.checked);
   };
 
-  const handleSubmit = (event) => {
+  const signIn = async (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get('email'),
-      password: data.get('password'),
-      remember: data.get('remember')
-    });
-  };
+    try {
+      await axios.post('http://localhost:3001/authapi/auth', {
+        email: data.get('email'),
+        password: data.get('password'),
+        remember: data.get('remember')
+      })
+        .then((response) => {
+          console.log(response.data)
+        })
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
 
   return (
     <ThemeProvider theme={theme}>
@@ -60,7 +68,7 @@ export default function SignIn() {
           <Typography component="h1" variant="h5">
             Sign in
           </Typography>
-          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+          <Box component="form" onSubmit={signIn} noValidate sx={{ mt: 1 }}>
             <TextField
               margin="normal"
               required
