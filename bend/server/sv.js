@@ -12,7 +12,8 @@ const PORT = process.env.PORT || 3001
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors())
-
+app.use(express.static('utils'));
+app.use('/img', express.static('img'));
 
 app.use('/authapi', userRoutes)           //prefix /api/users
 
