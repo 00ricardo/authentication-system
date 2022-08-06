@@ -1,4 +1,4 @@
-import { useState, useEffect, Fragment } from 'react';
+import React, { useState, useEffect, Fragment } from 'react';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -83,9 +83,12 @@ export default function SignUp() {
                         setLoading(current => !current)
                         setEmailSent(response.data.email)
                     }
+
                 })
         } catch (error) {
-            console.log(error.response.data);
+            if (error.response.status === 400) {
+                console.log(error.response.data);
+            }
         }
     };
 
