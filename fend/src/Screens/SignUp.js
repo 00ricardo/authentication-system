@@ -29,7 +29,7 @@ export default function SignUp() {
     /*
     * States
     */
-    const [isLoading, setLoading] = useState(false)
+    const [isSubmitted, setSubmission] = useState(false)
     const [emailSent, setEmailSent] = useState('')
     /*
 
@@ -37,8 +37,8 @@ export default function SignUp() {
     * Effects
     */
     useEffect(() => {
-        console.log(isLoading);
-    }, [isLoading]);
+        console.log(`Is Loading: ${isSubmitted}`);
+    }, [isSubmitted]);
 
 
     /* 
@@ -46,22 +46,26 @@ export default function SignUp() {
     */
 
     const sendEmail = async (event) => {
-        await registerUser(event)
-        console.log(process.env.REACT_APP_EMAIL_TOKEN)
+        var usrt = undefined
+        await registerUser(event).then((res) => {
+            usrt = res
+        })
+
+        const data = new FormData(event.target);
         try {
-            await axios.post('http://localhost:3001/authapi/sendemail', {
-                'from': "aa",
-                'to': "bb",
-                'subject': "cc",
-                'body': "dd",
-                'token': "dadkmasfashdbfnsidbfnuasoumfihq028934y7risf"
+            await axios.post('http://localhost:5000/authapi/sendemail', {
+                'to': data.get('email'),
+                'token': usrt,
+                headers: {
+                    "Access-Control-Allow-Origin": '*'
+                }
             })
                 .then((response) => {
                     console.log(response.data)
                     console.log(response.status)
                 })
         } catch (error) {
-            console.log(error.response.data);
+            console.log(error);
         }
 
     }
@@ -69,19 +73,22 @@ export default function SignUp() {
     const registerUser = async (event) => {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
+        var usrt = undefined
         try {
-            await axios.post('http://localhost:3001/authapi/register', {
+            await axios.post('http://localhost:5000/authapi/register', {
                 first_name: data.get('firstName'),
                 last_name: data.get('lastName'),
                 email: data.get('email'),
                 password: data.get('password'),
+                headers: {
+                    "Access-Control-Allow-Origin": '*'
+                }
             })
                 .then((response) => {
-                    console.log(response.data)
-                    console.log(response.status)
                     if (response.status === 201) {
-                        setLoading(current => !current)
+                        setSubmission(current => !current)
                         setEmailSent(response.data.email)
+                        usrt = response.data.token
                     }
 
                 })
@@ -90,11 +97,12 @@ export default function SignUp() {
                 console.log(error.response.data);
             }
         }
+        return usrt;
     };
 
     return (
         <>
-            {!isLoading ?
+            {!isSubmitted ?
                 (
                     <ThemeProvider theme={theme}>
                         <Container component="main" maxWidth="xs">
@@ -191,7 +199,7 @@ export default function SignUp() {
                                     alt="Email Sent"
                                 />
                                 <h1 style={{ textAlign: 'center' }}>Email Confirmation</h1>
-                                <Alert severity="success"> We have sent a email to <a style={{ color: "green" }}>{emailSent}</a> to confirm the validity of your email address. After receiving the email follow the link provided to complete your registration.</Alert>
+                                <Alert severity="success"> We have sent a email to <span style={{ color: "green" }}>{emailSent}</span> to confirm the validity of your email address. After receiving the email follow the link provided to complete your registration.</Alert>
                                 <Divider variant="middle" />
                                 <div style={{ textAlign: 'center' }} >
                                     If you not receive any email <a href='#'> Resend confirmation email </a>.

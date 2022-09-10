@@ -1,5 +1,5 @@
 import express from 'express'
-import { getUsers, auth, registerUser, sendEmail } from '../../controllers/auth/userController.js'
+import { getUsers, auth, registerUser, sendEmail, validateEmailToken } from '../../controllers/auth/userController.js'
 
 const router = express.Router()
 /*
@@ -16,6 +16,8 @@ Manage Authentication
 router.post('/register', registerUser)
 
 router.post('/sendemail', sendEmail)
+
+router.put('/confirm-email/', validateEmailToken)
 
 
 /*

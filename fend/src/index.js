@@ -6,7 +6,7 @@ import {
 } from 'react-router-dom';
 import SignIn from './Screens/SignIn';
 import SignUp from './Screens/SignUp';
-
+import ConfirmEmail from './Screens/ConfirmEmail';
 import ForgotPassword from './Screens/ForgotPassword';
 import reportWebVitals from './reportWebVitals';
 
@@ -22,6 +22,9 @@ export default function App() {
         </Route>
         <Route path="/password-reset">
           <ForgotPassword />
+        </Route>
+        <Route path="/confirm-email/">
+          <ConfirmEmail />
         </Route>
       </Switch>
     </Router>

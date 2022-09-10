@@ -1,16 +1,18 @@
-import User from '../../models/Users.js'
+import User, { UserToken } from '../../models/Users.js'
+import Group from '../../models/Groups.js'
 import checkParams from '../../utils/ubend.js'
 import bcrypt from 'bcrypt'
+import randomToken from 'random-token'
 const saltRounds = 10;
 import nodemailer from 'nodemailer'
 
 const auth = async (req, res) => {
     res.json({
-        "status": {
-            "code": "S200",
-            "message": "User Sucessfully Authenticated."
+        'status': {
+            'code': 'S200',
+            'message': 'User Sucessfully Authenticated.'
         },
-        "data": data
+        'data': data
     })
 }
 const getUsers = async (req, res) => {
@@ -38,9 +40,9 @@ const registerUser = async (req, res) => {
 
     // Hash Password
     if (!_status) {
-        data["username"] = data["email"]
+        data['username'] = data['email']
         try {
-            data["password"] = bcrypt.hashSync(data["password"], saltRounds);
+            data['password'] = bcrypt.hashSync(data['password'], saltRounds);
         }
         catch (error) {
             _status = error
@@ -48,21 +50,29 @@ const registerUser = async (req, res) => {
     }
     if (!_status) {
         try {
-            User.create(data);
-            [data["status"], http] = [{
+            var gp = await Group.findOne({ where: { name: 'unregistered' } })
+            var user = await User.build(data);
+            data['token'] = randomToken(64)
+            var token = await UserToken.build({ value: data['token'], type: 'confirmation' });
+
+            await user.setGroup(gp, { save: false });
+
+            [data['status'], http] = [{
                 'code': 'S200',
                 'message': 'User Sucessfully Registed.'
             }, 201]
 
-        }
-        catch (error) {
+        } catch {
             [_status, http] = [{
                 'code': 'E400',
-                'message': error
+                'message': 'Error with User Registration '
             }, 400]
         }
     }
     if (!_status) {
+        await user.save()
+        await token.setUser(user, { save: false });
+        await token.save()
         res.status(http).json(data)
     }
 
@@ -74,22 +84,17 @@ const registerUser = async (req, res) => {
 const sendEmail = async (req, res) => {
 
     let data = req.body
+
     let rp = [
-        'from', 'to',
-        'subject', 'body',
-        'token'
+        'to', 'token'
     ]
 
-    console.log(data.token)
-
     var [_status, http] = checkParams(rp, data)
-
-
     let testAccount = await nodemailer.createTestAccount();
 
     // create reusable transporter object using the default SMTP transport
     let transporter = nodemailer.createTransport({
-        host: "smtp.gmail.com",
+        host: 'smtp.gmail.com',
         port: 587,
         secure: false, // true for 465, false for other ports
         auth: {
@@ -101,8 +106,8 @@ const sendEmail = async (req, res) => {
     // send mail with defined transport object
     let info = await transporter.sendMail({
         from: 'Ricardo Briceño Authentication System', // sender address
-        to: "ricardodavid120@gmail.com", // list of receivers
-        subject: "Ricardo Briceño Authentication System", // Subject line
+        to: data['to'], // list of receivers
+        subject: 'Ricardo Briceño Authentication System Confirmation', // Subject line
         html: `<html xmlns="http://www.w3.org/1999/xhtml">
         <head>
             <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
@@ -157,20 +162,64 @@ const sendEmail = async (req, res) => {
         </body>
     </html>`
     });
-
-    console.log("Message sent: %s", info.messageId);
-    // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
-
-    // Preview only available when sending through an Ethereal account
-    console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
-    // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
 }
 
+const validateEmailToken = async (req, res) => {
+    let data = req.body
+    let rp = ['token']
+
+    var [_status, http] = checkParams(rp, data)
+
+    if (!_status) {
+        var tkn = await UserToken.findOne({ where: { value: data['token'], type: 'confirmation' } });
+        if (!tkn) {
+            [_status, http] = [{
+                code: 'E404',
+                message: 'Invalid Token.',
+                token: data['token']
+            }, 404]
+        }
+    }
+
+    if (!_status) {
+        [_status, http] = tkn['confirmation'] === true ? [{ 'code': 'E400', 'message': 'Token already validated.' }, 400] : [undefined, undefined]
+    }
+
+    if (!_status) {
+        var usr = await User.findOne({ where: { id: tkn['dataValues'].userId } });
+        if (!usr) {
+            [_status, http] = [{
+                code: 'E400',
+                message: 'User not found.',
+            }, 404]
+        } else {
+            await usr.update({ active: true });
+        }
+    }
+
+    if (!_status) {
+        await tkn.update({ confirmation: true });
+        [data, http] = [{
+            code: 'S200',
+            message: `Token Validated Sucessfully.`
+        }, 200]
+
+        data['data'] = tkn['dataValues']
+    }
+
+    if (!_status) {
+        res.status(http).json(data)
+    } else {
+        res.status(http).json(_status)
+    }
+
+}
 
 
 export {
     getUsers,
     auth,
     registerUser,
-    sendEmail
+    sendEmail,
+    validateEmailToken
 }
