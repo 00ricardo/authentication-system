@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import {
-  Route, Switch
+  Route, Routes
   , BrowserRouter as Router
 } from 'react-router-dom';
 import SignIn from './Screens/SignIn';
@@ -9,24 +9,17 @@ import SignUp from './Screens/SignUp';
 import ConfirmEmail from './Screens/ConfirmEmail';
 import ForgotPassword from './Screens/ForgotPassword';
 import reportWebVitals from './reportWebVitals';
-
+import Home from './Screens/Home';
 export default function App() {
   return (
     <Router>
-      <Switch>
-        <Route exact path="/">
-          <SignIn />
-        </Route>
-        <Route path="/signup">
-          <SignUp />
-        </Route>
-        <Route path="/password-reset">
-          <ForgotPassword />
-        </Route>
-        <Route path="/confirm-email/">
-          <ConfirmEmail />
-        </Route>
-      </Switch>
+      <Routes>
+        <Route exact path="/" element={<SignIn />} />
+        <Route exact path="/system" element={<Home />} />
+        <Route path="/signup" element={<SignUp />} />
+        <Route path="/password-reset" element={<ForgotPassword />} />
+        <Route path="/confirm-email/" element={<ConfirmEmail />} />
+      </Routes>
     </Router>
 
   );

@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React, { useState } from 'react';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -16,6 +16,7 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 //--------------------------//--------------------------------
 import Copyright from '../Components/Copyright';
 import axios from 'axios'
+import { useNavigate } from "react-router-dom";
 
 const theme = createTheme();
 
@@ -24,10 +25,11 @@ export default function SignIn() {
   /*
   * States
   */
-  const [remember, setRemember] = React.useState(false);
+  const [remember, setRemember] = useState(false);
   /*
   * Handlers
   */
+  const navigate = useNavigate();
   const handleRemember = (event) => {
     setRemember(event.target.checked);
   };
@@ -35,14 +37,21 @@ export default function SignIn() {
   const signIn = async (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
+
     try {
-      await axios.post('http://localhost:3001/authapi/auth', {
-        email: data.get('email'),
+      await axios.post('http://localhost:5000/authapi/auth', {
+        username: data.get('username'),
         password: data.get('password'),
-        remember: data.get('remember')
+        remember: data.get('remember') ? true : false,
       })
         .then((response) => {
-          console.log(response.data)
+
+          if (response.status === 200) {
+            sessionStorage.setItem('token', response.data.token)
+            navigate("/system");
+          } else {
+            console.log(response.data)
+          }
         })
     } catch (error) {
       console.error(error);
@@ -75,7 +84,7 @@ export default function SignIn() {
               fullWidth
               id="email"
               label="Email Address"
-              name="email"
+              name="username"
               autoComplete="email"
               autoFocus
             />

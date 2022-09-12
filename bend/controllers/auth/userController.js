@@ -5,18 +5,72 @@ import bcrypt from 'bcrypt'
 import randomToken from 'random-token'
 const saltRounds = 10;
 import nodemailer from 'nodemailer'
+import refreshToken from './refreshToken.js'
 
 const auth = async (req, res) => {
-    res.json({
-        'status': {
-            'code': 'S200',
-            'message': 'User Sucessfully Authenticated.'
-        },
-        'data': data
-    })
+    let data = req.body
+    let rp = ['username', 'password', 'remember']
+
+    var [_status, http] = checkParams(rp, data)
+
+    var response = undefined
+
+    if (!_status) {
+        try {
+            var user = await User.findOne({ where: { username: data.username } })
+        } catch {
+            _status = {
+                'status': {
+                    'code': 'E400',
+                    'message': `Missing Username.`
+                }
+            }
+            http = 400
+        }
+    }
+
+    if (!user) {
+        _status = {
+            'status': {
+                'code': 'E404',
+                'message': 'Wrong Username'
+            }
+        }
+        http = 400
+    }
+
+    if (!_status) {
+        let auth = await bcrypt.compare(data.password, user.password)
+        if (auth) {
+            let tkn = refreshToken(user.id)
+            console.log('token from controller ' + tkn)
+            response = { username: data.email, token: tkn, remember: data.remember }
+            response['status'] = {
+                'code': 'S200',
+                'message': 'User Sucessfully Authenticated.'
+            }
+            http = 200
+        } else {
+            _status = {
+                'status': {
+                    'code': 'E400',
+                    'message': data.password ? 'Wrong Password.' : 'Missing Password'
+                }
+            }
+            http = 400
+        }
+    }
+
+    if (!_status) {
+        res.json(response)
+    } else {
+        res.json(_status)
+    }
+
 }
 const getUsers = async (req, res) => {
-    //
+    const users = await User.findAll();
+    res.json(users)
 }
 
 const registerUser = async (req, res) => {
@@ -32,8 +86,10 @@ const registerUser = async (req, res) => {
         const user = await User.findOne({ where: { email: data['email'] } });
         if (user) {
             [_status, http] = [{
-                'code': 'E400',
-                'message': `User ${user["email"]} already registed.`
+                'status': {
+                    'code': 'E400',
+                    'message': `User ${user.email} already registed.`
+                }
             }, 400]
         }
     }
@@ -58,14 +114,18 @@ const registerUser = async (req, res) => {
             await user.setGroup(gp, { save: false });
 
             [data['status'], http] = [{
-                'code': 'S200',
-                'message': 'User Sucessfully Registed.'
+                'status': {
+                    'code': 'S200',
+                    'message': 'User Sucessfully Registed.'
+                }
             }, 201]
 
         } catch {
             [_status, http] = [{
-                'code': 'E400',
-                'message': 'Error with User Registration '
+                'status': {
+                    'code': 'E400',
+                    'message': 'Error with User Registration '
+                }
             }, 400]
         }
     }

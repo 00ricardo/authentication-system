@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Fragment } from 'react';
+import React, { useState, useEffect } from 'react';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -9,11 +9,10 @@ import Box from '@mui/material/Box';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
-import Divider from '@mui/material/Divider';
-import CardMedia from '@mui/material/CardMedia';
-import Alert from '@mui/material/Alert';
+import EmailSent from '../Components/EmailSent';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import mailSent from '../img/mail_sent.png'
+
+import checkFormInputs from '../utils/validation'
 //--------------------------//--------------------------------
 //--------------------------//--------------------------------
 import Copyright from '../Components/Copyright';
@@ -31,14 +30,17 @@ export default function SignUp() {
     */
     const [isSubmitted, setSubmission] = useState(false)
     const [emailSent, setEmailSent] = useState('')
+    const [errors, setErrors] = useState([])
     /*
 
    /*
     * Effects
     */
     useEffect(() => {
+
         console.log(`Is Loading: ${isSubmitted}`);
-    }, [isSubmitted]);
+        console.log(errors)
+    }, [isSubmitted, errors]);
 
 
     /* 
@@ -52,52 +54,68 @@ export default function SignUp() {
         })
 
         const data = new FormData(event.target);
-        try {
-            await axios.post('http://localhost:5000/authapi/sendemail', {
-                'to': data.get('email'),
-                'token': usrt,
-                headers: {
-                    "Access-Control-Allow-Origin": '*'
-                }
-            })
-                .then((response) => {
-                    console.log(response.data)
-                    console.log(response.status)
+        if (usrt !== 'error') {
+            try {
+                await axios.post('http://localhost:5000/authapi/sendemail', {
+                    'to': data.get('email'),
+                    'token': usrt,
+                    headers: {
+                        "Access-Control-Allow-Origin": '*'
+                    }
                 })
-        } catch (error) {
-            console.log(error);
+                    .then((response) => {
+                        console.log(response.data)
+                        console.log(response.status)
+                    })
+            } catch (error) {
+                console.log(error);
+            }
         }
+
 
     }
 
     const registerUser = async (event) => {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
-        var usrt = undefined
-        try {
-            await axios.post('http://localhost:5000/authapi/register', {
-                first_name: data.get('firstName'),
-                last_name: data.get('lastName'),
-                email: data.get('email'),
-                password: data.get('password'),
-                headers: {
-                    "Access-Control-Allow-Origin": '*'
-                }
-            })
-                .then((response) => {
-                    if (response.status === 201) {
-                        setSubmission(current => !current)
-                        setEmailSent(response.data.email)
-                        usrt = response.data.token
-                    }
 
-                })
-        } catch (error) {
-            if (error.response.status === 400) {
-                console.log(error.response.data);
-            }
+        const rp = ['firstName', 'lastName', 'email', 'password']
+        var required = checkFormInputs(rp, data)
+
+        if (required.length !== 0) {
+            setErrors(required['missing'])
         }
-        return usrt;
+
+        if (required['message'] === 'valid') {
+            var usrt = undefined
+            try {
+                await axios.post('http://localhost:5000/authapi/register', {
+                    first_name: data.get('firstName'),
+                    last_name: data.get('lastName'),
+                    email: data.get('email'),
+                    password: data.get('password'),
+                    headers: {
+                        "Access-Control-Allow-Origin": '*'
+                    }
+                })
+                    .then((response) => {
+                        if (response.status === 201) {
+                            setSubmission(current => !current)
+                            setEmailSent(response.data.email)
+                            usrt = response.data.token
+                        }
+
+                    })
+            } catch (error) {
+                if (error.response.status === 400) {
+                    console.log(error.response.data);
+                }
+                console.log(error)
+            }
+            return usrt;
+        } else {
+            return 'error'
+        }
     };
 
     return (
@@ -132,6 +150,7 @@ export default function SignUp() {
                                                 id="firstName"
                                                 label="First Name"
                                                 autoFocus
+                                                error={errors && errors.includes('firstName') ? true : false}
                                             />
                                         </Grid>
                                         <Grid item xs={12} sm={6}>
@@ -142,6 +161,7 @@ export default function SignUp() {
                                                 label="Last Name"
                                                 name="lastName"
                                                 autoComplete="family-name"
+                                                error={errors && errors.includes('lastName') ? true : false}
                                             />
                                         </Grid>
                                         <Grid item xs={12}>
@@ -152,6 +172,7 @@ export default function SignUp() {
                                                 label="Email Address"
                                                 name="email"
                                                 autoComplete="email"
+                                                error={errors && errors.includes('email') ? true : false}
                                             />
                                         </Grid>
                                         <Grid item xs={12}>
@@ -163,8 +184,12 @@ export default function SignUp() {
                                                 type="password"
                                                 id="password"
                                                 autoComplete="new-password"
+                                                error={errors && errors.includes('password') ? true : false}
+                                                helperText={errors && errors.includes('password') ? 'Password Required' : ''}
+                                                variant="standard"
                                             />
                                         </Grid>
+
                                     </Grid>
                                     <Button
                                         type="submit"
@@ -189,24 +214,7 @@ export default function SignUp() {
                 )
 
                 : (
-                    <Fragment>
-                        <CssBaseline />
-                        <Container maxWidth="sm">
-                            <Box sx={{ height: '100vh' }}>
-                                <CardMedia
-                                    component="img"
-                                    image={mailSent}
-                                    alt="Email Sent"
-                                />
-                                <h1 style={{ textAlign: 'center' }}>Email Confirmation</h1>
-                                <Alert severity="success"> We have sent a email to <span style={{ color: "green" }}>{emailSent}</span> to confirm the validity of your email address. After receiving the email follow the link provided to complete your registration.</Alert>
-                                <Divider variant="middle" />
-                                <div style={{ textAlign: 'center' }} >
-                                    If you not receive any email <a href='#'> Resend confirmation email </a>.
-                                </div>
-                            </Box>
-                        </Container>
-                    </Fragment>
+                    <EmailSent emailSent={emailSent} />
                 )
             }
         </>

@@ -1,5 +1,5 @@
 import sequelize from './conn.js'
-import User from '../models/Users.js';
+import User, { UserToken } from '../models/Users.js';
 import Groups from '../models/Groups.js';
 
 // -- //
@@ -10,6 +10,7 @@ const migrateModels = async () => {
     groups.forEach(async (gp) => {
         await Groups.create(gp)
     });
+    await UserToken.destroy({ where: { userId: null } })
 }
 
 migrateModels()

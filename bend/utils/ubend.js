@@ -5,7 +5,7 @@ const checkParams = (params, data) => {
     realparams - dict with parameters
     */
 
-    var [_status, http] = [null, null]
+    var [_status, http] = [undefined, undefined]
     for (var p in params) {
         if (!(params[p] in data)) {
             _status = {
@@ -16,7 +16,7 @@ const checkParams = (params, data) => {
 
             http = 400
 
-            if (_status != null) {
+            if (_status != undefined) {
                 break;
             }
         }

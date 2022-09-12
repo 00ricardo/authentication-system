@@ -22,7 +22,7 @@ app.use(function (req, res, next) {
     next();
 });
 app.use(cors())
-app.use('/authapi', userRoutes)           //prefix /api/users
+app.use('/authapi', userRoutes)           //prefix /authapi/
 
 
 app.listen(PORT, () => {
