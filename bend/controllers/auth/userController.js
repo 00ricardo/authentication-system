@@ -71,6 +71,16 @@ const getUsers = async (req, res) => {
     res.status(200).json(users)
 }
 
+const deleteUsers = async (req, res) => {
+    await User.destroy({ where: {} })
+    res.status(200).json({
+        status: {
+            code: 'S200',
+            message: 'All Users Deleted.'
+        }
+    })
+}
+
 const registerUser = async (req, res) => {
     let data = req.body
     let rp = [
@@ -211,7 +221,7 @@ const sendEmail = async (req, res) => {
                     and to activate your Account.
                     <br><br>
                     To activate your account, please follow the link below:
-                    <a href="http://localhost:3000/confirm-email?confirmation_token=${data.token}">http://localhost:3000/confirm-email?confirmation_token=${data.token}</a>
+                    <a href="http://localhost:3000/confirm-email?type=confirmation&token=${data.token}">http://localhost:3000/confirm-email?type=confirmation&token=${data.token}</a>
                     <br><br>
                     Ricardo Briceño Authentication System
                 </span>`
@@ -221,7 +231,7 @@ const sendEmail = async (req, res) => {
                     to reset your password on Ricardo Briceño Authentication System.
                     <br><br>
                     To reset your password, please follow the link below:
-                    <a href="http://localhost:3000/confirm-email?confirmation_token=${data.token}">http://localhost:3000/confirm-email?confirmation_token=${data.token}</a>
+                    <a href="http://localhost:3000/confirm-email?type=recovery&token=${data.token}">http://localhost:3000/confirm-email?type=recovery&token=${data.token}</a>
                     <br><br>
                     We recommend that you keep your password secure and not share 
                     it with anyone. If you feel your password has been compromised, 
@@ -264,6 +274,7 @@ const sendEmail = async (req, res) => {
 const validateEmailToken = async (req, res) => {
     let data = req.body
     let rp = ['token', 'type']
+    let response = undefined
 
     var [_status, http] = checkParams(rp, data)
 
@@ -284,7 +295,7 @@ const validateEmailToken = async (req, res) => {
 
     if (!_status) {
         var usr = await User.findOne({ where: { id: tkn.userId } });
-        if (!usr) {
+        if (!usr && type === 'confirmation') {
             [_status, http] = [{
                 code: 'E400',
                 message: 'User not found.',
@@ -295,17 +306,26 @@ const validateEmailToken = async (req, res) => {
     }
 
     if (!_status) {
-        await tkn.update({ confirmation: true });
-        [data, http] = [{
-            code: 'S200',
-            message: `Token Validated Sucessfully.`
-        }, 200]
+        if (tkn.type === 'confirmation') {
+            await tkn.update({ confirmation: true });
+            [response, http] = [{
+                code: 'S200',
+                message: `Token Validated Sucessfully.`
+            }, 200]
 
-        data['data'] = tkn['dataValues']
+            response['data'] = tkn['dataValues']
+        } else {
+
+            [response, http] = [{
+                code: 'S200',
+                message: `Wait for new password.`
+            }, 200]
+            response['data'] = { username: usr.username, token: data['token'] }
+        }
     }
 
     if (!_status) {
-        res.status(http).json(data)
+        res.status(http).json(response)
     } else {
         res.status(http).json(_status)
     }
@@ -374,7 +394,8 @@ const passRecovery = async (req, res) => {
 
 const changePassword = async (req, res) => {
     let data = req.body
-    let rp = ['username', 'password']
+    let rp = ['username', 'opass', 'cpass', 'token', 'type']
+    var passMatch
 
     var [_status, http] = checkParams(rp, data)
 
@@ -383,9 +404,9 @@ const changePassword = async (req, res) => {
             var user = await User.findOne({ where: { username: data.username } })
         } catch {
             _status = {
-                'status': {
-                    'code': 'E400',
-                    'message': `Missing Username.`
+                status: {
+                    code: 'E400',
+                    message: 'Missing Username.'
                 }
             }
             http = 400
@@ -394,43 +415,77 @@ const changePassword = async (req, res) => {
 
     if (!_status && !user) {
         _status = {
-            'status': {
-                'code': 'E404',
-                'message': `Wrong User.`
+            status: {
+                code: 'E404',
+                message: `Wrong User.`
             }
         }
         http = 404
     }
 
     if (!_status) {
-        let passMatch = await bcrypt.compare(data.password, user.password)
+        if (data['opass'] !== data['cpass']) {
+            _status = {
+                status: {
+                    code: 'E400',
+                    message: "Password does't match."
+                }
+            }
+            http = 400
+        }
+    }
+
+
+    if (!_status) {
+        try {
+            passMatch = await bcrypt.compare(data.opass, user.password)
+        } catch {
+            _status = {
+                status: {
+                    code: 'E400',
+                    message: 'Password cannot be empty.'
+                }
+            }
+            http = 400
+        }
         if (passMatch) {
             _status = {
-                'status': {
-                    'code': 'E400',
-                    'message': 'Your new password cannot be the same to your old one.'
+                status: {
+                    code: 'E400',
+                    message: 'Your new password cannot be the same to your old one.'
                 }
             }
             http = 400
         } else {
             try {
-                data['password'] = bcrypt.hashSync(data['password'], saltRounds);
-                user.update({ password: data['password'] })
+                data['opass'] = bcrypt.hashSync(data['opass'], saltRounds);
+                data['cpass'] = data['opass']
+                user.update({ password: data['opass'] })
             }
             catch (error) {
-                _status = error
+                _status = {
+                    status: {
+                        code: 'E400',
+                        message: 'Password cannot be empty.'
+                    }
+                }
                 http = 400
             }
         }
     }
     if (!_status) {
         await user.save()
+
+        var tkn = await UserToken.findOne({ where: { value: data['token'], type: data['type'] } });
+        await tkn.update({ confirmation: true });
+
         data['status'] = {
             code: 'S200',
             message: 'Password Succesfully Updated.'
         }
         http = 200
         res.status(http).json(data)
+
     } else {
         res.status(http).json(_status)
     }
@@ -443,5 +498,6 @@ export {
     sendEmail,
     validateEmailToken,
     passRecovery,
-    changePassword
+    changePassword,
+    deleteUsers
 }

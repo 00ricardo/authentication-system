@@ -18,7 +18,7 @@ export default function EmailSent(props) {
                         alt="Email Sent"
                     />
                     <h1 style={{ textAlign: 'center' }}>Email Confirmation</h1>
-                    <Alert severity="success"> We have sent a email to <span style={{ color: "green" }}>{props.emailSent}</span> to confirm the validity of your email address. After receiving the email follow the link provided to complete your registration.</Alert>
+                    <Alert severity="success"> We have sent a email to <span style={{ color: "green" }}>{props.emailSent}</span> to confirm the validity of your email address. After receiving the email follow the link provided to complete your {props.type === 'confirmation' ? 'registration' : props.type === 'recovery' ? 'password recovery process' : ''}.</Alert>
                     <Divider variant="middle" />
                     <div style={{ textAlign: 'center' }} >
                         If you not receive any email <a href='#'> Resend confirmation email </a>.
