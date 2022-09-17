@@ -9,13 +9,13 @@ import Box from '@mui/material/Box';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
-import EmailSent from '../Components/EmailSent';
+import EmailSent from '../components/EmailSent';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 import checkFormInputs from '../utils/validation'
 //--------------------------//--------------------------------
 //--------------------------//--------------------------------
-import Copyright from '../Components/Copyright';
+import Copyright from '../components/Copyright';
 import axios from 'axios'
 
 const theme = createTheme();
@@ -59,6 +59,7 @@ export default function SignUp() {
                 await axios.post('http://localhost:5000/authapi/sendemail', {
                     'to': data.get('email'),
                     'token': usrt,
+                    'type': 'confirmation',
                     headers: {
                         "Access-Control-Allow-Origin": '*'
                     }

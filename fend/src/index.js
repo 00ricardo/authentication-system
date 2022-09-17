@@ -4,12 +4,12 @@ import {
   Route, Routes
   , BrowserRouter as Router
 } from 'react-router-dom';
-import SignIn from './Screens/SignIn';
-import SignUp from './Screens/SignUp';
-import ConfirmEmail from './Screens/ConfirmEmail';
-import ForgotPassword from './Screens/ForgotPassword';
+import SignIn from './screens/SignIn';
+import SignUp from './screens/SignUp';
+import ConfirmEmail from './screens/ConfirmEmail';
+import ForgotPassword from './screens/ForgotPassword';
 import reportWebVitals from './reportWebVitals';
-import Home from './Screens/Home';
+import Home from './screens/Home';
 export default function App() {
   return (
     <Router>

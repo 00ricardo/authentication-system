@@ -14,7 +14,7 @@ import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 //--------------------------//--------------------------------
 //--------------------------//--------------------------------
-import Copyright from '../Components/Copyright';
+import Copyright from '../components/Copyright';
 import axios from 'axios'
 import { useNavigate } from "react-router-dom";
 
@@ -48,13 +48,15 @@ export default function SignIn() {
 
           if (response.status === 200) {
             sessionStorage.setItem('token', response.data.token)
+            console.log(response)
             navigate("/system");
+
           } else {
             console.log(response.data)
           }
         })
     } catch (error) {
-      console.error(error);
+      console.log(error.response.data);
     }
   }
 
