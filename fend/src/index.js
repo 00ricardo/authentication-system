@@ -11,11 +11,12 @@ import ForgotPassword from './screens/ForgotPassword';
 import reportWebVitals from './reportWebVitals';
 import Home from './screens/Home';
 export default function App() {
+
   return (
     <Router>
       <Routes>
-        <Route exact path="/" element={<SignIn />} />
-        <Route exact path="/system" element={<Home />} />
+        <Route path="/" element={<SignIn />} />
+        <Route path="/system" element={<Home protected />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/password-reset" element={<ForgotPassword />} />
         <Route path="/confirm-email/" element={<ConfirmEmail />} />

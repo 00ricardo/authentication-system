@@ -3,6 +3,11 @@ import sequelize from '../db/conn.js'
 import Group from './Groups.js'
 
 const User = sequelize.define("user", {
+  id: {
+    type: DataTypes.BIGINT,
+    autoIncrement: false,
+    primaryKey: true
+  },
   password: {
     type: DataTypes.TEXT,
     allowNull: false

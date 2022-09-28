@@ -20,7 +20,7 @@ import { useNavigate } from "react-router-dom";
 
 const theme = createTheme();
 
-export default function SignIn() {
+export default function SignIn(props) {
 
   /*
   * States
@@ -43,11 +43,12 @@ export default function SignIn() {
         username: data.get('username'),
         password: data.get('password'),
         remember: data.get('remember') ? true : false,
+        timestamp: new Date()
       })
         .then((response) => {
 
           if (response.status === 200) {
-            sessionStorage.setItem('token', response.data.token)
+            localStorage.setItem('token', response.data.token)
             console.log(response)
             navigate("/system");
 

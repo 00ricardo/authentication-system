@@ -134,6 +134,7 @@ export default function ConfirmEmail() {
                                                 margin="normal"
                                                 required
                                                 fullWidth
+                                                type="password"
                                                 label="New password"
                                                 name="original-password"
                                                 autoComplete="password-1"
@@ -143,6 +144,7 @@ export default function ConfirmEmail() {
                                                 margin="normal"
                                                 required
                                                 fullWidth
+                                                type="password"
                                                 label="Confirm password"
                                                 name="clone-password"
                                                 autoComplete="password-2"

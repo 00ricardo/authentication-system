@@ -9,7 +9,8 @@ import refreshToken from './refreshToken.js'
 
 const auth = async (req, res) => {
     let data = req.body
-    let rp = ['username', 'password', 'remember']
+    let rp = ['username', 'password',
+        'remember', 'timestamp']
 
     var [_status, http] = checkParams(rp, data)
 
@@ -29,7 +30,7 @@ const auth = async (req, res) => {
         }
     }
 
-    if (!user) {
+    if (!user && !_status) {
         _status = {
             'status': {
                 'code': 'E404',
@@ -59,6 +60,20 @@ const auth = async (req, res) => {
             http = 400
         }
     }
+
+    if (!_status) {
+        try {
+            await user.update({ last_login: new Date() })
+        } catch {
+            [_status, http] = [
+                {
+                    status: {
+                        code: 'E400',
+                        message: 'Last login Log Error.'
+                    }
+                }, 400]
+        }
+    }
     if (!_status) {
         res.status(http).json(response)
     } else {
@@ -66,6 +81,7 @@ const auth = async (req, res) => {
     }
 
 }
+
 const getUsers = async (req, res) => {
     const users = await User.findAll();
     res.status(200).json(users)
@@ -116,6 +132,7 @@ const registerUser = async (req, res) => {
     if (!_status) {
         try {
             var gp = await Group.findOne({ where: { name: 'unregistered' } })
+            data['id'] = new Date().getTime()
             var user = await User.build(data);
             data['token'] = randomToken(64)
             var token = await UserToken.build({ value: data['token'], type: 'confirmation' });
@@ -301,6 +318,8 @@ const validateEmailToken = async (req, res) => {
                 message: 'User not found.',
             }, 404]
         } else {
+            var gp = await Group.findOne({ where: { name: 'user' } })
+            await usr.setGroup(gp, { save: false });
             await usr.update({ active: true });
         }
     }
@@ -308,6 +327,7 @@ const validateEmailToken = async (req, res) => {
     if (!_status) {
         if (tkn.type === 'confirmation') {
             await tkn.update({ confirmation: true });
+
             [response, http] = [{
                 code: 'S200',
                 message: `Token Validated Sucessfully.`
@@ -491,6 +511,31 @@ const changePassword = async (req, res) => {
     }
 }
 
+const logout = async (req, res) => {
+    let data = req.body
+    let rp = ['username', 'token']
+
+    var [_status, http] = checkParams(rp, data)
+
+    if (!_status) {
+        //check if user and token exist
+        var [response, http] = [{
+            status: {
+                code: 'S200',
+                message: 'Logout'
+            }
+        }, http = 200]
+    }
+
+    if (!_status) {
+        res.status(http).json(response)
+
+    } else {
+        res.status(http).json(_status)
+    }
+
+}
+
 export {
     getUsers,
     auth,
@@ -499,5 +544,6 @@ export {
     validateEmailToken,
     passRecovery,
     changePassword,
-    deleteUsers
+    deleteUsers,
+    logout
 }
