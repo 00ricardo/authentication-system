@@ -10,8 +10,8 @@ import ConfirmEmail from './screens/ConfirmEmail';
 import ForgotPassword from './screens/ForgotPassword';
 import reportWebVitals from './reportWebVitals';
 import Home from './screens/Home';
-export default function App() {
 
+export default function App() {
   return (
     <Router>
       <Routes>
@@ -21,7 +21,7 @@ export default function App() {
         <Route path="/password-reset" element={<ForgotPassword />} />
         <Route path="/confirm-email/" element={<ConfirmEmail />} />
       </Routes>
-    </Router>
+    </Router >
 
   );
 }

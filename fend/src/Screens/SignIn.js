@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -18,9 +18,10 @@ import Copyright from '../components/Copyright';
 import axios from 'axios'
 import { useNavigate } from "react-router-dom";
 
+
 const theme = createTheme();
 
-export default function SignIn(props) {
+export default function SignIn() {
 
   /*
   * States
@@ -46,9 +47,10 @@ export default function SignIn(props) {
         timestamp: new Date()
       })
         .then((response) => {
-
+          let data = response.data
           if (response.status === 200) {
-            localStorage.setItem('token', response.data.token)
+            localStorage.setItem('token', data.token)
+            localStorage.setItem('usr', data.username)
             console.log(response)
             navigate("/system");
 

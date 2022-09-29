@@ -44,7 +44,7 @@ const auth = async (req, res) => {
         let auth = await bcrypt.compare(data.password, user.password)
         if (auth) {
             let tkn = refreshToken(user.id)
-            response = { username: data.email, token: tkn, remember: data.remember }
+            response = { username: data.username, token: tkn, remember: data.remember }
             response['status'] = {
                 'code': 'S200',
                 'message': 'User Sucessfully Authenticated.'

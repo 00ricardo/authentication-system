@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from "react-router-dom";
 import axios from 'axios'
+import Navbar from '../components/Navbar';
 
 export default function Home() {
     const [users, setUsers] = useState([])
@@ -58,11 +59,12 @@ export default function Home() {
     }, [err])
 
     return (
-        <div>
+        <>
+            <Navbar />
             {users.map((usr, idx) =>
                 <div key={idx}> {usr.username}</div>
             )}
             <button onClick={logout}>Logout</button>
-        </div>
+        </>
     )
 }
