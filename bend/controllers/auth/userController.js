@@ -1,6 +1,6 @@
 import User, { UserToken } from '../../models/Users.js'
 import Group from '../../models/Groups.js'
-import checkParams from '../../utils/ubend.js'
+import checkParams, { getExtParams } from '../../utils/ubend.js'
 import bcrypt from 'bcrypt'
 import randomToken from 'random-token'
 const saltRounds = 10;
@@ -167,6 +167,95 @@ const registerUser = async (req, res) => {
     }
 }
 
+const updateUser = async (req, res) => {
+    let data = req.body
+    const rp = ['id']
+    var [_status, http] = checkParams(rp, data)
+    let extp = getExtParams(rp, data)
+
+    if (!_status) {
+        try {
+            var user = await User.findOne({ where: { id: data.id } })
+        } catch {
+            _status = {
+                status: {
+                    code: 'E400',
+                    message: 'Missing userid.'
+                }
+            }
+            http = 400
+        }
+    }
+
+    if (!_status) {
+        if (!user) {
+            _status = {
+                status: {
+                    code: 'E404',
+                    message: 'User not found.'
+                }
+            }
+            http = 404
+        }
+    }
+
+    if (!_status) {
+
+        if (extp) {
+            if (extp.includes('role')) {
+                try {
+                    var gp = await Group.findOne({ where: { name: data.role } })
+                } catch {
+                    _status = {
+                        status: {
+                            code: 'E400',
+                            message: 'Missing gpid.'
+                        }
+                    }
+                    http = 400
+                }
+
+                if (gp) {
+                    await user.setGroup(gp, { save: true });
+                } else {
+                    _status = {
+                        status: {
+                            code: 'E404',
+                            message: 'Group not found.'
+                        }
+                    }
+                    http = 404
+                }
+            }
+
+            extp.forEach(extt => {
+                if (extt !== 'role') {
+                    user[extt] = data[extt]
+                }
+            });
+        }
+    }
+
+    if (!_status) {
+        await user.save()
+        let response = {
+            status: {
+                code: 'S200',
+                message: 'User updated successfully.',
+                data: user
+            }
+        }
+        http = 200
+
+        res.status(http).json(response)
+    }
+    else {
+        res.status(http).json(_status)
+    }
+
+
+}
+
 const sendEmail = async (req, res) => {
 
     let data = req.body
@@ -218,7 +307,7 @@ const sendEmail = async (req, res) => {
                                 <td align="left" valign="top" colspan="2" 
                                     style="border-bottom: 1px solid #CCCCCC; padding-bottom: 
                                     10px;">
-                                    <img alt="Authentication System Logo" border="0" src="https://i.ibb.co/YpbjC7H/logo.jpg" title="Ricardo Briceño" 
+                                    <img alt="Authentication System Logo" border="0" src="https://i.ibb.co/XFfgG96/brand-logo.jpg" title="Ricardo Briceño" 
                                         class="sitelogo" width="40%" style="max-width:250px;" />
                                 </td>
                             </tr>
@@ -320,13 +409,14 @@ const validateEmailToken = async (req, res) => {
         } else {
             var gp = await Group.findOne({ where: { name: 'user' } })
             await usr.setGroup(gp, { save: false });
-            await usr.update({ active: true });
+            await usr.update({ active: true, groupId: 2 });
         }
     }
 
     if (!_status) {
         if (tkn.type === 'confirmation') {
             await tkn.update({ confirmation: true });
+            await usr.save();
 
             [response, http] = [{
                 code: 'S200',
@@ -545,5 +635,6 @@ export {
     passRecovery,
     changePassword,
     deleteUsers,
-    logout
+    logout,
+    updateUser
 }

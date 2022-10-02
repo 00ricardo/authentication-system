@@ -34,21 +34,21 @@ const protect = async (req, res, next) => {
             //this will fired when the token is wrong (doesnt match with the correct one)
             _status = {
                 'status': {
-                    'code': 'E400',
-                    'message': 'Not authorized, wrong token.'
+                    'code': 'E401',
+                    'message': 'Not authorized, wrong/expired token.'
                 }
             }
-            http = 400
+            http = 401
         }
     }
     if (!_status && !token) {       //this will fired when the token is null (undefined)
         _status = {
             'status': {
-                'code': 'E400',
+                'code': 'E401',
                 'message': 'Not authorized, missing token.'
             }
         }
-        http = 400
+        http = 401
     }
     if (!_status) {
         res.status(200)

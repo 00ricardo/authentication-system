@@ -1,7 +1,7 @@
 import React, { useEffect, useState, Fragment } from 'react'
 import axios from 'axios'
 
-import logo from '../img/logo.jpg'
+import logo from '../img/brand-logo.jpg'
 import Divider from '@mui/material/Divider';
 import CardMedia from '@mui/material/CardMedia';
 import Alert from '@mui/material/Alert';
@@ -48,7 +48,6 @@ export default function ConfirmEmail() {
             setVerified(true)
         }
     }
-
 
     const recovery = async (event) => {
         event.preventDefault();
@@ -99,7 +98,7 @@ export default function ConfirmEmail() {
                         {type === 'confirmation' && verified ?
                             <>
                                 <h1 style={{ textAlign: 'center' }}>Account Alredy Verified </h1>
-                                <Alert severity="warning"> This account already has been validated.</Alert>
+                                <Alert severity="warning"> This account already has been validated. <br /> <a href='/'>Login</a></Alert>
                             </> : type === 'recovery' && verified ?
                                 <>
                                     <h1 style={{ textAlign: 'center' }}>Password Recovery</h1>
@@ -109,7 +108,7 @@ export default function ConfirmEmail() {
 
                         <Divider variant="middle" />
                         <div style={{ textAlign: 'center' }} >
-                            Don't remember your password? <a href='#'> Password Recovery</a>.
+                            Don't remember your password? <a href='/password-reset'> Password Recovery</a>.
                         </div>
                     </Box>
                 </Container> :
@@ -124,7 +123,7 @@ export default function ConfirmEmail() {
                         {type === 'confirmation' ?
                             <>
                                 <h1 style={{ textAlign: 'center' }}> Account Verified</h1>
-                                <Alert severity="success"> You have sucessfully verified your acount. You can now authenticate yourself in the system.</Alert>
+                                <Alert severity="success"> You have sucessfully verified your acount. You can now authenticate yourself in the system. <br /> <a href='/'>Login</a></Alert>
                             </> : type === 'recovery' ?
                                 <>
                                     <h1 style={{ textAlign: 'center' }}>Password Recovery</h1>
@@ -164,7 +163,7 @@ export default function ConfirmEmail() {
                         }
                         <Divider variant="middle" />
                         <div style={{ textAlign: 'center' }} >
-                            If you not remember your password any email you can <a href='#'> reset your password </a>.
+                            If you not remember your password any email you can <a href='/password-reset'> reset your password </a>.
                         </div>
                     </Box>
                 </Container>}

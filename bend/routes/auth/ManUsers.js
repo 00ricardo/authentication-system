@@ -2,7 +2,7 @@ import express from 'express'
 import {
     getUsers, auth, registerUser, sendEmail,
     validateEmailToken, passRecovery, changePassword,
-    deleteUsers, logout
+    deleteUsers, logout, updateUser
 } from '../../controllers/auth/userController.js'
 import { protect } from '../../controllers/auth/authMiddleware.js'
 
@@ -32,7 +32,7 @@ router.route('/users').delete(/*protect, */deleteUsers)
 
 router.get('/user/:userid')
 
-router.post('/user/:userid')
+router.route('/user/:userid').put(protect, updateUser)
 
 router.delete('/user/:userid')
 

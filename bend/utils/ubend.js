@@ -24,4 +24,15 @@ const checkParams = (params, data) => {
     return [_status, http]
 }
 
+
+export function getExtParams(mandatoryp, requestp) {
+    var extp = []
+    for (const prm in requestp) {
+        if (!mandatoryp.includes(prm)) {
+            extp.push(prm)
+        }
+    };
+    return extp
+}
+
 export default checkParams

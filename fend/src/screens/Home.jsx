@@ -2,11 +2,15 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate } from "react-router-dom";
 import axios from 'axios'
 import Navbar from '../components/Navbar';
+import CustomPaginationActionsTable from '../components/CustomPaginationActionsTable';
+
 
 export default function Home() {
     const [users, setUsers] = useState([])
+    const [frender, setFRender] = useState(true)
     const [err, setError] = useState(undefined)
     const navigate = useNavigate();
+
 
     const fetchUsers = async () => {
         try {
@@ -17,54 +21,40 @@ export default function Home() {
             }
             )
                 .then((response) => {
-                    setUsers(response.data)
+                    if (response.status === 200) {
+                        setUsers(response.data)
+                        setFRender(false)
+                    }
                 })
         } catch (error) {
-            if (error.response.status !== 200) {
+            if (error.response.status === 400) {
                 setError(error.response.data.status.message)
-            }
-            console.log(err)
-        }
-    }
-
-    const logout = async () => {
-        try {
-            await axios.post('http://localhost:5000/authapi/logout', {
-                username: 'xd',
-                token: localStorage.getItem('token'),
-            }, {
-                headers: {
-                    'Authorization': 'Bearer ' + localStorage.getItem('token')
-                }
-            }).then((response) => {
-                console.log(response)
-                localStorage.clear('token')
                 navigate("/");
-            })
-        } catch (error) {
-            if (error.response.status !== 200) {
-                setError(error.response.data.status.message)
-
             }
-            console.log(err)
+            else if (error.response.status === 401) {
+                navigate("/");
+            } else {
+                console.log(err)
+            }
         }
+        return
     }
 
     useEffect(() => {
         if (localStorage.getItem('token')) {
-            fetchUsers()
+            if (frender) {
+                fetchUsers()
+            }
+
         } else {
             navigate("/");
         }
-    }, [err])
+    }, [err, users])
 
     return (
         <>
             <Navbar />
-            {users.map((usr, idx) =>
-                <div key={idx}> {usr.username}</div>
-            )}
-            <button onClick={logout}>Logout</button>
+            <CustomPaginationActionsTable data={users} />
         </>
     )
 }

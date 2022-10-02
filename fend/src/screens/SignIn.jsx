@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -27,6 +27,7 @@ export default function SignIn() {
   * States
   */
   const [remember, setRemember] = useState(false);
+  const [usernameR, setUsernameR] = useState('');
   /*
   * Handlers
   */
@@ -34,6 +35,10 @@ export default function SignIn() {
   const handleRemember = (event) => {
     setRemember(event.target.checked);
   };
+
+  const handleUsername = (event) => {
+    setUsernameR(event.target.value)
+  }
 
   const signIn = async (event) => {
     event.preventDefault();
@@ -50,8 +55,13 @@ export default function SignIn() {
           let data = response.data
           if (response.status === 200) {
             localStorage.setItem('token', data.token)
-            localStorage.setItem('usr', data.username)
-            console.log(response)
+            console.log(data)
+            let info = {
+              username: data.username,
+              remember: data.remember
+            }
+            localStorage.setItem('usr', JSON.stringify(info));
+            console.log(response);
             navigate("/system");
 
           } else {
@@ -63,6 +73,12 @@ export default function SignIn() {
     }
   }
 
+  useEffect(() => {
+    if (JSON.parse(localStorage.getItem('usr'))) {
+      setRemember(JSON.parse(localStorage.getItem('usr')).remember)
+      setUsernameR(JSON.parse(localStorage.getItem('usr')).username)
+    }
+  }, [])
 
   return (
     <ThemeProvider theme={theme}>
@@ -92,6 +108,8 @@ export default function SignIn() {
               name="username"
               autoComplete="email"
               autoFocus
+              value={usernameR}
+              onChange={handleUsername}
             />
             <TextField
               margin="normal"
@@ -104,7 +122,7 @@ export default function SignIn() {
               autoComplete="current-password"
             />
             <FormControlLabel
-              control={<Checkbox value={remember} onChange={handleRemember} color="primary" name="remember" />}
+              control={<Checkbox value={remember} onChange={handleRemember} checked={remember} color="primary" name="remember" />}
               label="Remember me"
             />
             <Button
