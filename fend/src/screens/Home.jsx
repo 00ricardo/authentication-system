@@ -18,14 +18,12 @@ export default function Home() {
                 headers: {
                     'Authorization': 'Bearer ' + localStorage.getItem('token')
                 }
-            }
-            )
-                .then((response) => {
-                    if (response.status === 200) {
-                        setUsers(response.data)
-                        setFRender(false)
-                    }
-                })
+            }).then((response) => {
+                if (response.status === 200) {
+                    setUsers(response.data)
+                    setFRender(false)
+                }
+            })
         } catch (error) {
             if (error.response.status === 400) {
                 setError(error.response.data.status.message)
@@ -54,7 +52,7 @@ export default function Home() {
     return (
         <>
             <Navbar />
-            <CustomPaginationActionsTable data={users} />
+            <CustomPaginationActionsTable data={users} setUsers={setUsers} />
         </>
     )
 }

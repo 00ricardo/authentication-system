@@ -83,6 +83,8 @@ const auth = async (req, res) => {
 }
 
 const getUsers = async (req, res) => {
+    var authheader = req.headers.authorization;
+    console.log(authheader)
     const users = await User.findAll();
     res.status(200).json(users)
 }
@@ -254,6 +256,55 @@ const updateUser = async (req, res) => {
     }
 
 
+}
+
+const deleteUser = async (req, res) => {
+    let data = req.params
+    const rp = ['userid']
+    var [_status, http] = checkParams(rp, data)
+
+    if (!_status) {
+        try {
+            var user = await User.findOne({ where: { id: data.userid } })
+        } catch {
+            _status = {
+                status: {
+                    code: 'E400',
+                    message: 'Missing userid.'
+                }
+            }
+            http = 400
+        }
+    }
+
+    if (!_status) {
+        if (!user) {
+            _status = {
+                status: {
+                    code: 'E404',
+                    message: 'User not found.'
+                }
+            }
+            http = 404
+        }
+    }
+
+    if (!_status) {
+        let response = {
+            status: {
+                code: 'S200',
+                message: 'User deleted successfully.',
+            }
+        }
+        http = 200
+
+        await user.destroy()
+
+        res.status(http).json(response)
+    }
+    else {
+        res.status(http).json(_status)
+    }
 }
 
 const sendEmail = async (req, res) => {
@@ -636,5 +687,6 @@ export {
     changePassword,
     deleteUsers,
     logout,
-    updateUser
+    updateUser,
+    deleteUser
 }

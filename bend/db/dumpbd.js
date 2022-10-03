@@ -2,7 +2,7 @@ import randomToken from 'random-token'
 const none = undefined
 export const groups = [
     { id: 1, name: "unregistered" },
-    { id: 2, name: "user" },
+    { id: 2, name: "normal" },
     { id: 3, name: "admin" },
 ]
 export const users = [

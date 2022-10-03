@@ -85,11 +85,35 @@ export default function CustomPaginationActionsTable(props) {
                     }
                 })
         } catch (error) {
-            console.log(error);
+            console.log(error.response.data);
         }
         setEditRowId(null)
         setERole(null)
         setELName(null)
+    }
+
+    const handleDelete = async (id) => {
+        try {
+            await axios.delete(`http://localhost:5000/authapi/user/${id}`,
+                {
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    }
+                })
+                .then((response) => {
+
+                    if (response.status === 200) {
+                        props.setUsers(props.data.filter((usr) => usr.id !== id));
+                    }
+                    else {
+                        console.log(response.data)
+                    }
+                })
+        } catch (error) {
+            console.log(error);
+        }
+
+        setEditRowId(null)
     }
 
     const handleRoleI = (event) => {
@@ -149,12 +173,20 @@ export default function CustomPaginationActionsTable(props) {
                                         <Chip variant="filled" color="success" size="small" label='Yes' />
                                         : <Chip variant="filled" color="warning" size="small" label='No' />}
                                 </TableCell>
-                                <TableCell align="left"> {!editRowId ? <ModeIcon onClick={() => handleEdition(row.id)} style={{ cursor: 'pointer' }} /> :
+                                <TableCell align="left">
                                     <div>
-                                        <CheckIcon onClick={() => handleSubmit(row.id)} style={{ cursor: 'pointer' }} />
-                                        <ClearIcon onClick={() => setEditRowId(null)} style={{ cursor: 'pointer' }} />
+                                        {editRowId === row.id ?
+                                            <div>
+                                                <CheckIcon onClick={() => handleSubmit(row.id)} style={{ cursor: 'pointer' }} />
+                                                <ClearIcon onClick={() => setEditRowId(null)} style={{ cursor: 'pointer' }} />
+                                            </div> :
+                                            <div>
+                                                <ModeIcon onClick={() => handleEdition(row.id)} style={{ cursor: 'pointer' }} />
+                                                <ClearIcon onClick={() => handleDelete(row.id)} style={{ cursor: 'pointer' }} />
+                                            </div>
+                                        }
                                     </div>
-                                }</TableCell>
+                                </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>

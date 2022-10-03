@@ -55,7 +55,6 @@ export default function SignIn() {
           let data = response.data
           if (response.status === 200) {
             localStorage.setItem('token', data.token)
-            console.log(data)
             let info = {
               username: data.username,
               remember: data.remember

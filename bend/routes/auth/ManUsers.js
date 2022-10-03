@@ -2,7 +2,7 @@ import express from 'express'
 import {
     getUsers, auth, registerUser, sendEmail,
     validateEmailToken, passRecovery, changePassword,
-    deleteUsers, logout, updateUser
+    deleteUsers, logout, updateUser, deleteUser
 } from '../../controllers/auth/userController.js'
 import { protect } from '../../controllers/auth/authMiddleware.js'
 
@@ -26,14 +26,14 @@ router.route('/change-password').put(changePassword)
 // Manage Users
 router.route('/users').get(protect, getUsers)
 
-router.post('/users')
+//router.route('/users').post(protect, getUsers)
 
-router.route('/users').delete(/*protect, */deleteUsers)
+//router.route('/users').delete(/*protect, */deleteUsers)
 
-router.get('/user/:userid')
+//router.route('/user/:userid').get(protect, updateUser)
 
 router.route('/user/:userid').put(protect, updateUser)
 
-router.delete('/user/:userid')
+router.route('/user/:userid').delete(protect, deleteUser)
 
 export default router
